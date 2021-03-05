@@ -2,7 +2,7 @@ Package: gtsummary_addin
 Type: Package
 Title: Adds interactive add-in of gtsummary to Rstudio. 
 Version: 0.1.0
-Author: Norimitsu Nishida
+Authors@R: person("Norimitsu","Nishida", email="ma06063@gmail.com",role=c("aut","cre"))
 Description: Adds interactive add-in of gtsummary to Rstudio. 
     This package provides an interactive GUI of the gtsummary package. 
     The gtsummary is a package for making a sophisticated table from R 
