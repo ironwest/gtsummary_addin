@@ -11,6 +11,7 @@ Description: Adds interactive add-in of gtsummary to Rstudio.
     This package only borrows a part of the powerful gtsummary package. 
     For utilizing the full functionality of the gtsummary, users 
     recommended hard code the R script.
+BugReports: https://github.com/ironwest/gtsummary_addin/issues
 License: MIT
 Encoding: UTF-8
 LazyData: true
