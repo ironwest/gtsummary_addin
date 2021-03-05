@@ -1,22 +1,7 @@
-# library(miniUI)
-# library(gt)
-# library(gtsummary)
-# library(readr)
-# library(magrittr)
-# library(dplyr)
-# library(shiny)
-# library(openxlsx)
-# library(shinycssloaders)
-# library(shinyjs)
-# library(shinyWidgets)
-# library(purrr)
-# library(stringr)
-# library(tibble)
-# library(tidyr)
-# library(rlang)
-# library(rmarkdown)
-# library(flextable)
-
+#' Function to run tbl_summary add-in.
+#'
+#' This function is to call shiny app for tbl_summary/
+#'
 #' @importFrom magrittr %>%
 #' @importFrom shinyjs useShinyjs hide show
 #' @importFrom shinycssloaders withSpinner
@@ -34,33 +19,14 @@
 #' @import shiny
 #' @import dplyr
 #' @import shinyWidgets
-#' @import knitr
 
 tbl_summary_addin <- function(){
 
-  choices_add_p_test <- c(
-    "t.test","aov","wilcox.test","kruskal.test",
-    "chisq.test","chisq.test.no.correct","fisher.test"
-  )
+  #load variables for arguments used in gtsummary functions--------------
+  choices_add_p_test <- test_argument_for_add_p_tbl_summary()
 
-  input_file <- fileInput(
-    inputId = "file",
-    label =  "Choose CSV File",
-    multiple = FALSE,
-    accept = c("text/csv",
-               "text/comma-separated-values,text/plain",
-               ".csv")
-  )
-
-
-  set_csv_delimiter <- awesomeRadio(
-    inputId = "set_csv_delimiter",
-    label = "CSV Delimiter:",
-    choices = list(",(comma)" = ",", ";(semi-colon)" = ";", "\t(tab)" = "\t"),
-    selected = ",",
-    inline = TRUE,
-    status = "success"
-  )
+  #call module_load_variable for data.frame-------------------
+  variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
   #Setting for sidebar panel--------------------------------------------
   setting_by <- selectInput("by", label = "Group By", choices = NA)
@@ -159,22 +125,16 @@ tbl_summary_addin <- function(){
   ui <- fluidPage(
     useShinyjs(),
 
-    titlePanel("Summarise Your Data!"),
+    titlePanel("Interactive tbl_summary"),
 
     sidebarLayout(
       sidebarPanel(
-        input_file,
-        set_csv_delimiter,
         setting_variables,
         setting_by,
         setting_statistics,
         setting_digits,
         setting_missingtext,
-        fluidRow(dlbutton_excel, dlbutton_csv, dlbutton_html),
-        hr(),
-        p("This app uses following great packages! gt, gtsummary, readr, magrittr, dplyr, shiny, openxlsx, shinycssloaders, shinyjs, shinyWidgets, purrr, stringr, tibble, tidyr, rlang, rmarkdown and flextable."),
-        hr(),
-        fluidRow(a("Script for this app is placed in here", href = "https://github.com/ironwest/egsummary"))
+        fluidRow(dlbutton_excel, dlbutton_csv, dlbutton_html)
       ),
 
       mainPanel(
@@ -312,9 +272,8 @@ tbl_summary_addin <- function(){
 
     #data logic ---------------------------------------
 
-    #Show relevant UI when file uploaded--------------------
-    observeEvent(input$file, {
-
+    #Show relevant UI when variable selected--------------------
+    observeEvent(dat(), {
       show("dltable_word")
       show("dltable_csv")
       show("dltable_html")
@@ -332,14 +291,15 @@ tbl_summary_addin <- function(){
       show("footnote")
     })
 
-    # dat() -----------------------------
+    #Read data from environmet -----------------------------
+    variable_name <- variableLoaderModalServer(id = "load_variable_name", target_type = "data.frame")
+
     dat <- reactive({
-      req(input$file)
-
-      res <- read_delim(input$file$datapath, delim = input$set_csv_delimiter)
-
-      return(res)
+      req(variable_name())
+      read_this <- eval(parse(text=variable_name()))
+      return(read_this)
     })
+
 
 
     #Make Summary Table-------------------------------
@@ -379,6 +339,7 @@ tbl_summary_addin <- function(){
         nam <- editted_label %>% names()
 
         set_label <- as.list(nam) %>% set_names(val)
+        browser()
       }
 
       #_Tbl summary-----------------------------------
@@ -563,7 +524,7 @@ tbl_summary_addin <- function(){
 
     #[@]Script text output------------------------
     output$script <- renderText({
-      filename <- input$file$name
+      filename <- ""
       #_set_by-----
       if(input$by == "NA") set_by <- "NULL" else set_by <- input$by
 
@@ -663,7 +624,6 @@ tbl_summary_addin <- function(){
         "library(tidyverse)",
         "library(gtsummary)",
         "# Read data from csv------------------------------------",
-        "csv_data <- read_delim('<DIR PATH>//{filename}', delim = '{input$set_csv_delimiter}')",
         "",
         "# Make summary table-----------------------------------",
         "summarised_table <- tbl_summary(",
@@ -694,7 +654,8 @@ tbl_summary_addin <- function(){
 
     #Output---------------------------
     output$table1 <- gt::render_gt({
-      req(input$file)
+
+      req(dat())
       modified_appearance() %>% as_gt()
     })
 
