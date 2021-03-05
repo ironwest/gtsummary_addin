@@ -1,0 +1,30 @@
+Package: gtsummary_addin
+Type: Package
+Title: Adds 
+Version: 0.1.0
+Author: Norimitsu Nishida
+Description: Adds interactive add-in of gtsummary to Rstudio.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
+Imports:
+    dplyr,
+    flextable,
+    gt,
+    gtsummary,
+    magrittr,
+    miniUI (>= 0.1.1),
+    openxlsx,
+    purrr,
+    readr,
+    rlang,
+    rmarkdown,
+    rstudioapi (>= 0.5)
+    shiny (>= 0.13),
+    shinycssloaders,
+    shinyjs,
+    shinyWidgets,
+    tibble,
+    tidyr,
+    stringr,

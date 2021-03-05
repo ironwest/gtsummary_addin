@@ -1,0 +1,15 @@
+---
+title: "Summary Table"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r}
+gtsummary::as_flex_table(modified_appearance())
+```
+
