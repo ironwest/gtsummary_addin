@@ -1,30 +1,37 @@
 Package: gtsummary_addin
 Type: Package
-Title: Adds 
+Title: Adds interactive add-in of gtsummary to Rstudio. 
 Version: 0.1.0
 Author: Norimitsu Nishida
-Description: Adds interactive add-in of gtsummary to Rstudio.
+Description: Adds interactive add-in of gtsummary to Rstudio. 
+    This package provides an interactive GUI of the gtsummary package. 
+    The gtsummary is a package for making a sophisticated table from R 
+    objects using the gt package. This package loads a shiny app for 
+    call tbl_summary and tbl_regression function from gtsummary. 
+    This package only borrows a part of the powerful gtsummary package. 
+    For utilizing the full functionality of the gtsummary, users 
+    recommended hard code the R script.
 License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
 Imports:
-    dplyr,
-    flextable,
-    gt,
-    gtsummary,
-    magrittr,
+    dplyr (>=1.0.0),
+    flextable (>=0.6.9),
+    gt (>=0.2.2),
+    gtsummary (>=1.3.7),
+    magrittr (>=2.0.0),
     miniUI (>= 0.1.1),
-    openxlsx,
-    purrr,
-    readr,
-    rlang,
-    rmarkdown,
+    openxlsx (>=4.2.0),
+    purrr (>=0.3.4),
+    readr (>=1.3.0),
+    rlang (>=0.4.10),
+    rmarkdown (>=2.7),
     rstudioapi (>= 0.5)
     shiny (>= 0.13),
-    shinycssloaders,
-    shinyjs,
-    shinyWidgets,
-    tibble,
-    tidyr,
-    stringr,
+    shinycssloaders (>=1.0.0),
+    shinyjs (>=2.0.0),
+    shinyWidgets (>=0.5.7),
+    tibble (>=3.0.6),
+    tidyr (>=1.1.3),
+    stringr (>=1.4.0),
