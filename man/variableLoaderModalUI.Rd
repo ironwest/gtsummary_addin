@@ -7,7 +7,7 @@
 variableLoaderModalUI(id)
 }
 \arguments{
-\item{target_type}{Currently "data.frame" (for tbl_summary) only.}
+\item{id}{id for shiny module.}
 }
 \description{
 UI Module to select variable from target environment.

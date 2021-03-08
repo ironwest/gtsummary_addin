@@ -1,4 +1,4 @@
-#call module_load_variable-----------------------------------
+#
 #
 # library(shiny)
 # source("R/module_load_variable.R")

@@ -6,6 +6,11 @@
 \usage{
 variableLoaderModalServer(id, target_type = "data.frame")
 }
+\arguments{
+\item{id}{id for shiny module}
+
+\item{target_type}{use "data.frame" for tbl_summary}
+}
 \description{
 Server Module to select variable from target environment.
 }

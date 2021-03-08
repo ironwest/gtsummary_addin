@@ -7,13 +7,14 @@
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom gt gt_output render_gt
 #' @importFrom purrr map pmap map2_chr
-#' @importFrom stringr str_c str_glue
+#' @importFrom stringr str_c str_glue str_detect str_remove
 #' @importFrom tibble enframe as_tibble
 #' @importFrom tidyr unnest
 #' @importFrom readr read_delim write_csv
 #' @importFrom rlang set_names
 #' @importFrom rmarkdown render
 #' @importFrom flextable as_flextable
+#' @importFrom clipr write_clip
 #' @import gtsummary
 #' @import miniUI
 #' @import shiny
@@ -22,27 +23,16 @@
 
 tbl_summary_addin <- function(){
 
-  #load variables for arguments used in gtsummary functions--------------
-  choices_add_p_test <- test_argument_for_add_p_tbl_summary()
-
-  #call module_load_variable for data.frame-------------------
+  #call module------------------------
   variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
-  #Setting for sidebar panel--------------------------------------------
+  #UI parts: Setting for sidebar panel-----------------------------------------------------------
   setting_by <- selectInput("by", label = "Group By", choices = NA)
 
-  setting_variables <- pickerInput(
-    inputId = "var",
-    label = "Select Variables",
-    choices = NA,
-    options = list(
-      `actions-box` = TRUE),
-    multiple = TRUE
-  )
+  setting_variables <- pickerInput("var", label="Select Variables", choices=NA, options=list(`actions-box`=TRUE), multiple=TRUE)
 
   setting_statistics <- div(
-    textInput(
-      "statistics_continuous",
+    textInput("statistics_continuous",
       label = "Statistics(Continuous) * use {mean / median / sd / var / min / max / p##}",
       value = "{mean} ({sd})"
     ),
@@ -57,84 +47,65 @@ tbl_summary_addin <- function(){
 
   setting_missingtext <- textInput("missing_text","Missing text", value = "(Missing)")
 
-  #setting for dropdown--------------------------
+  #UI parts:setting for dropdown-----------------------------------------------------------------
   setting_add_p <- div(
     materialSwitch("add_p_condition","Add p", status = "primary"),
-    selectInput("add_p_categorical","Test for categorical data", choices = choices_add_p_test, selected = "chisq.test"),
-    selectInput("add_p_continuous", "Test for continuous data" , choices = choices_add_p_test, selected = "kruskal.test")
+    selectInput("add_p_categorical", "Test for categorical data", choices=add_p_tbl_summary_test(), selected="chisq.test"),
+    selectInput("add_p_continuous" , "Test for continuous data" , choices=add_p_tbl_summary_test(), selected="kruskal.test")
   )
 
   setting_add_overall <- div(
-    materialSwitch("add_overall_condition","Add Overall", status = "primary"),
-    prettyCheckbox("add_overall_last", label = "Last", value = FALSE),
-    textInput("add_overall_label",label = "Label", value = "**Overall**, N = {N}")
+    materialSwitch("add_overall_condition", label="Add Overall", status="primary"),
+    prettyCheckbox("add_overall_last", label="Last", value=FALSE),
+    textInput("add_overall_label", label="Label", value="**Overall**, N = {N}")
   )
 
   setting_add_n <- div(
-    materialSwitch("add_n_condition","Add N", status = "primary"),
+    materialSwitch("add_n_condition", label="Add N", status="primary")
   )
 
-  #dropdown buttons---------------------------
+  #UI parts: dropdown buttons---------------------------
   dropdown_add_column <- dropdownButton(
-    inputId = "drop_down_add_column",
-    label = "Add Columns (p,N,overall)",
-    setting_add_p,
-    setting_add_overall,
-    setting_add_n,
-    circle = FALSE,
-    status = "primary",
-    icon = icon("gear"))
+    "drop_down_add_column", label="Add Columns (p,N,overall)",
+    setting_add_p, setting_add_overall, setting_add_n,
+    circle=FALSE, status="primary", icon=icon("gear"))
 
   dropdown_modify_label <- dropdownButton(
-    inputId = "drop_down_modify_label",
-    label = "Variable Label Setting",
+    "drop_down_modify_label", label="Variable Label Setting",
     uiOutput("edit_label"),
-    circle = FALSE,
-    status = "primary",
-    icon = icon("tag")
+    circle=FALSE, status="primary", icon=icon("tag")
   )
 
   dropdown_header_setting <- dropdownButton(
-    inputId = "drop_down_header_setting",
-    label = "Table Header Setting",
-    uiOutput("header"),
-    prettyCheckbox("bold_label", "Bold Label"),
-    circle = FALSE,
-    status = "primary",
-    icon = icon("heading")
+    "drop_down_header_setting", label="Table Header Setting",
+    uiOutput("header"), prettyCheckbox("bold_label", "Bold Label"),
+    circle=FALSE, status="primary", icon=icon("heading")
   )
 
   dropdown_set_column_type <- dropdownButton(
-    inputId = "drop_down_set_column_type",
-    label = "Variable Type Setting",
+    "drop_down_set_column_type", label="Variable Type Setting",
     uiOutput("set_column_type"),
-    circle = FALSE,
-    status = "primary",
-    icon = icon("cat"),
-    width = 12
+    circle=FALSE, status="primary", icon=icon("cat"), width=12
   )
 
-  #dlbuttons -------------------------------------
+  #UI parts:dlbuttons -------------------------------------
 
   dlbutton_excel <- downloadButton("dltable_word", "DL(Word)")
   dlbutton_csv <- downloadButton("dltable_csv", "DL(CSV)(data only)")
   dlbutton_html <- downloadButton("dltable_html", "DL(HTML)")
 
-  #modify appearance------------------------------
+  #UI parts: copy button-------------------------------------
+  button_copy_script <- actionButton("copy_script","Copy script to clipboard", icon=icon("clipboard"))
 
+  #UI------------------------------
   ui <- fluidPage(
     useShinyjs(),
-
     titlePanel("Interactive tbl_summary"),
-
     sidebarLayout(
       sidebarPanel(
-        setting_variables,
-        setting_by,
-        setting_statistics,
-        setting_digits,
-        setting_missingtext,
-        fluidRow(dlbutton_excel, dlbutton_csv, dlbutton_html)
+        setting_variables,setting_by,setting_statistics,setting_digits,setting_missingtext,
+        fluidRow( dlbutton_excel, dlbutton_csv, dlbutton_html ),
+        fluidRow( button_copy_script )
       ),
 
       mainPanel(
@@ -154,6 +125,7 @@ tbl_summary_addin <- function(){
     )
   )
 
+  #@@@ SERVER----------------------------------
   server <- function(input, output, session) {
 
     #Hide all UI ----------------------------------
@@ -522,7 +494,7 @@ tbl_summary_addin <- function(){
     #
     # })
 
-    #[@]Script text output------------------------
+    #@ Script text: output------------------------
     output$script <- renderText({
       filename <- ""
       #_set_by-----
@@ -651,6 +623,11 @@ tbl_summary_addin <- function(){
       return(str_glue(fintext))
     })
 
+    #@ Script text: copy button-----------------
+    observeEvent(input$copy_script, ~{
+      browser()
+      write_clip("test")
+    })
 
     #Output---------------------------
     output$table1 <- gt::render_gt({

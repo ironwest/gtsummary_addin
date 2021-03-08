@@ -2,7 +2,6 @@
 #' @param type Either Currently "data.frame" (for tbl_summary) only.
 #' @importFrom purrr map_lgl
 
-
 load_environmental_variable <- function(type="data.frame"){
   current_variable <- names(globalenv())
 
@@ -17,8 +16,9 @@ load_environmental_variable <- function(type="data.frame"){
 
 #' UI Module to select variable from target environment.
 #'
-#' @param target_type Currently "data.frame" (for tbl_summary) only.
+#' @param id id for shiny module.
 #' @importFrom stringr str_glue
+#' @import shiny
 
 variableLoaderModalUI <- function(id){
   ns <- NS(id)
@@ -30,6 +30,10 @@ variableLoaderModalUI <- function(id){
 
 #' Server Module to select variable from target environment.
 #'
+#' @param id id for shiny module
+#' @param target_type use "data.frame" for tbl_summary
+#' @import stringr
+#' @import shiny
 
 variableLoaderModalServer <- function(id, target_type="data.frame"){
   moduleServer(
