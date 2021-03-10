@@ -363,11 +363,11 @@ tbl_summary_addin <- function(){
 
       current_data <- dat()
 
-      settings <- enframe(map(current_data, typeof)) %>%
+      settings <- enframe(map(current_data, class)) %>%
         unnest(value) %>%
         mutate(type = case_when(
-          value %in% c("double","integer") ~ "continuous",
-          value %in% c("factor","character") ~ "categorical"
+          value %in% c("numeric") ~ "continuous",
+          value %in% c("factor","character","logical") ~ "categorical"
         )) %>%
         mutate(id = str_c("type_",1:n()))
 
@@ -395,6 +395,7 @@ tbl_summary_addin <- function(){
     type_argument <- reactive({
       req(setting_table())
 
+      browser()
       settings <- setting_table()
 
       settings <- settings %>%
@@ -635,7 +636,7 @@ tbl_summary_addin <- function(){
     output$clip <- renderUI({
       rclipButton(
         "clipbtn",
-        label="Copy to clipboard",
+        label="Copy script to clipboard",
         clipText=script_to_generate_table(),
         icon=icon("clipboard")
       )
