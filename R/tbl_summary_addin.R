@@ -48,6 +48,8 @@ tbl_summary_addin <- function(){
 
   setting_missingtext <- textInput("missing_text","Missing text", value = "(Missing)")
 
+  setting_percent <- selectInput("percent", "Percent", choices = c("column", "row", "cell"), selected = "column")
+
   #UI parts:setting for dropdown-----------------------------------------------------------------
   setting_add_p <- div(
     materialSwitch("add_p_condition","Add p", status = "primary"),
@@ -67,24 +69,24 @@ tbl_summary_addin <- function(){
 
   #UI parts: dropdown buttons---------------------------
   dropdown_add_column <- dropdownButton(
-    "drop_down_add_column", label="Add Columns (p,N,overall)",
+    label="Add Columns (p,N,overall)",
     setting_add_p, setting_add_overall, setting_add_n,
     circle=FALSE, status="primary", icon=icon("gear"))
 
   dropdown_modify_label <- dropdownButton(
-    "drop_down_modify_label", label="Variable Label Setting",
+    label="Variable Label Setting",
     uiOutput("edit_label"),
     circle=FALSE, status="primary", icon=icon("tag")
   )
 
   dropdown_header_setting <- dropdownButton(
-    "drop_down_header_setting", label="Table Header Setting",
+    label="Table Header Setting",
     uiOutput("header"), prettyCheckbox("bold_label", "Bold Label"),
     circle=FALSE, status="primary", icon=icon("heading")
   )
 
   dropdown_set_column_type <- dropdownButton(
-    "drop_down_set_column_type", label="Variable Type Setting",
+    label="Variable Type Setting",
     uiOutput("set_column_type"),
     circle=FALSE, status="primary", icon=icon("cat"), width=12
   )
@@ -105,7 +107,7 @@ tbl_summary_addin <- function(){
     titlePanel("Interactive tbl_summary"),
     sidebarLayout(
       sidebarPanel(
-        setting_variables,setting_by,setting_statistics,setting_digits,setting_missingtext,
+        setting_variables,setting_by,setting_statistics,setting_digits,setting_missingtext,setting_percent,
         fluidRow( dlbutton_excel, dlbutton_csv, dlbutton_html ),
         fluidRow( button_copy_script )
       ),
@@ -273,6 +275,7 @@ tbl_summary_addin <- function(){
     # > dat() ------------------------------------
     dat <- reactive({
       req(variable_name())
+      browser()
       read_this <- eval(parse(text=variable_name()))
       return(read_this)
     })
@@ -312,7 +315,6 @@ tbl_summary_addin <- function(){
         nam <- editted_label %>% names()
 
         set_label <- as.list(nam) %>% set_names(val)
-        browser()
       }
 
       # >> gtsummary::tbl_summary() -----------------------------------
@@ -321,13 +323,17 @@ tbl_summary_addin <- function(){
         data = table_data,
         by = set_by,
         label = set_label,
-        type = type_argument(),
         statistic = list(
           all_continuous()   ~ input$statistics_continuous,
           all_categorical() ~ input$statistics_categorical
         ),
         digits = all_continuous() ~ input$digits,
-        missing_text = input$missing_text
+        type = type_argument(),
+        value = NULL,      #value to display for dichotomous variables (not implemented yet)
+        missing = "ifany", #Not implemented yet: "no","ifany","always"
+        missing_text = input$missing_text,
+        sort = NULL,       # Not implemented yet
+        percent = "column" # Not implemented yet (column, row, cell)
       )
 
       # >> gtsummary::add_p() --------------------------------------------
@@ -395,7 +401,6 @@ tbl_summary_addin <- function(){
     type_argument <- reactive({
       req(setting_table())
 
-      browser()
       settings <- setting_table()
 
       settings <- settings %>%
