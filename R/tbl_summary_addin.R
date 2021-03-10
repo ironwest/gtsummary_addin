@@ -29,9 +29,7 @@ tbl_summary_addin <- function(){
 
   #UI parts: Setting for sidebar panel-----------------------------------------------------------
   setting_by <- selectInput("by", label = "Group By", choices = NA)
-
   setting_variables <- pickerInput("var", label="Select Variables", choices=NA, options=list(`actions-box`=TRUE), multiple=TRUE)
-
   setting_statistics <- div(
     textInput("statistics_continuous",
       label = "Statistics(Continuous) * use {mean / median / sd / var / min / max / p##}",
@@ -43,11 +41,9 @@ tbl_summary_addin <- function(){
       value = "{n} / {N} ({p}%)"
     )
   )
-
   setting_digits <- numericInput("digits","Digits",value = 2, step = 1)
-
+  setting_missing <- selectInput("missing","Missing * Indicate whether to include count of NA values in the table", choices = c("ifany","no","always"), selected = "ifany")
   setting_missingtext <- textInput("missing_text","Missing text", value = "(Missing)")
-
   setting_percent <- selectInput("percent", "Percent", choices = c("column", "row", "cell"), selected = "column")
 
   #UI parts:setting for dropdown-----------------------------------------------------------------
@@ -107,7 +103,7 @@ tbl_summary_addin <- function(){
     titlePanel("Interactive tbl_summary"),
     sidebarLayout(
       sidebarPanel(
-        setting_variables,setting_by,setting_statistics,setting_digits,setting_missingtext,setting_percent,
+        setting_variables,setting_by,setting_statistics,setting_digits,setting_missing, setting_missingtext,setting_percent,
         fluidRow( dlbutton_excel, dlbutton_csv, dlbutton_html ),
         fluidRow( button_copy_script )
       ),
@@ -139,6 +135,7 @@ tbl_summary_addin <- function(){
     hide("var")
     hide("by")
     hide("percent")
+    hide("missing")
     hide("add_p_condition")
     hide("add_p_categorical")
     hide("add_p_continuous")
@@ -259,6 +256,7 @@ tbl_summary_addin <- function(){
       show("statistics_categorical")
       show("statistics_continuous")
       show("digits")
+      show("missing")
       show("missing_text")
       show("drop_down_add_column")
       show("drop_down_modify_label")
@@ -334,10 +332,10 @@ tbl_summary_addin <- function(){
         digits = all_continuous() ~ input$digits,
         type = type_argument(),
         value = NULL,      #value to display for dichotomous variables (not implemented yet)
-        missing = "ifany", #Not implemented yet: "no","ifany","always"
+        missing = input$missing,
         missing_text = input$missing_text,
         sort = NULL,       # Not implemented yet
-        percent = input$percent # Not implemented yet (column, row, cell)
+        percent = input$percent
       )
 
       # >> gtsummary::add_p() --------------------------------------------
