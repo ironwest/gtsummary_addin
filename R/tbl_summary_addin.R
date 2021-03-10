@@ -20,6 +20,7 @@
 #' @import shiny
 #' @import dplyr
 #' @import shinyWidgets
+#' @import rclipboard
 
 tbl_summary_addin <- function(){
 
@@ -95,11 +96,12 @@ tbl_summary_addin <- function(){
   dlbutton_html <- downloadButton("dltable_html", "DL(HTML)")
 
   #UI parts: copy button-------------------------------------
-  button_copy_script <- actionButton("copy_script","Copy script to clipboard", icon=icon("clipboard"))
+  button_copy_script <- uiOutput("clip")
 
   #UI------------------------------
   ui <- fluidPage(
     useShinyjs(),
+    rclipboardSetup(),
     titlePanel("Interactive tbl_summary"),
     sidebarLayout(
       sidebarPanel(
@@ -126,9 +128,10 @@ tbl_summary_addin <- function(){
   )
 
   #@@@ SERVER----------------------------------
+
   server <- function(input, output, session) {
 
-    #Hide all UI ----------------------------------
+    # Hide all UI ----------------------------------
     hide("dltable_word")
     hide("dltable_csv")
     hide("var")
@@ -151,7 +154,8 @@ tbl_summary_addin <- function(){
     hide("bold_label")
     hide("footnote_p")
 
-    #UI show/hide logic --------------------------------
+    #[UI]-----------------------------------------------
+    # > Show/Hide logic--------------------------------
     observeEvent(input$by,{
       if(input$by == "NA"){
         updateMaterialSwitch(session = session, inputId = "add_p_condition", value = FALSE)
@@ -186,7 +190,7 @@ tbl_summary_addin <- function(){
       }
     })
 
-    #UI: edit label------------------------------
+    # > Edit label------------------------------
     output$edit_label <- renderUI({
       req(dat())
 
@@ -204,9 +208,9 @@ tbl_summary_addin <- function(){
       return(returning_ui)
     })
 
-    #modify label logic -----------------------------------
+    # > Modify label logic -----------------------------------
     label_vector <- eventReactive(input$update_label, {
-      #_Label Modification---------------------------
+
       label_inputs <- names(input) %>%
         enframe(name = NULL, value = "id") %>%
         mutate(value = map(id, ~{input[[.]]})) %>%
@@ -220,11 +224,10 @@ tbl_summary_addin <- function(){
       return(res)
     })
 
-    #Update Var and By select input----------------------
+    # > Update select input:var----------------------
     observeEvent(dat(), {
 
-      column_names <- dat() %>%
-        colnames()
+      column_names <- dat() %>%colnames()
 
       updatePickerInput(
         session  = session,
@@ -234,6 +237,7 @@ tbl_summary_addin <- function(){
       )
     })
 
+    # > Update select input:by----------------------
     observeEvent(input$var, {
       updateSelectInput(
         session = session,
@@ -242,9 +246,7 @@ tbl_summary_addin <- function(){
       )
     })
 
-    #data logic ---------------------------------------
-
-    #Show relevant UI when variable selected--------------------
+    # > Show relevant UI when variable selected--------------------
     observeEvent(dat(), {
       show("dltable_word")
       show("dltable_csv")
@@ -263,31 +265,30 @@ tbl_summary_addin <- function(){
       show("footnote")
     })
 
-    #Read data from environmet -----------------------------
+    #[Load Data] ---------------------------------------
+
+    # > variable_name: Module(variable_LoaderModalServer) -----------------------------
     variable_name <- variableLoaderModalServer(id = "load_variable_name", target_type = "data.frame")
 
+    # > dat() ------------------------------------
     dat <- reactive({
       req(variable_name())
       read_this <- eval(parse(text=variable_name()))
       return(read_this)
     })
 
+    # [Make Summary Table] -------------------------------------------------
 
-
-    #Make Summary Table-------------------------------
+    # > summary_table() ----------------------------------------
     summary_table <- reactive({
       req(dat())
 
       table_data <- dat()
 
-      #_set by name depend on renamed vector----------------
-      if(input$by == "NA"){
-        set_by <- NULL
-      }else{
-        set_by <- input$by
-      }
+      # >> set by name depend on renamed vector----------------
+      if(input$by == "NA"){ set_by <- NULL }else{ set_by <- input$by }
 
-      #_select data depend on input$var
+      # >> select data depend on input$var-----------------------
       if(is.null(input$var)){
         table_data <- tibble(` ` = "Select at least one variable")
       }else{
@@ -295,7 +296,7 @@ tbl_summary_addin <- function(){
           select(input$var)
       }
 
-      #make list for label---------------------------
+      # >> make list for label---------------------------
       editted_label <- tryCatch(
         expr = {label_vector()},
         error = function(e) {
@@ -314,7 +315,7 @@ tbl_summary_addin <- function(){
         browser()
       }
 
-      #_Tbl summary-----------------------------------
+      # >> gtsummary::tbl_summary() -----------------------------------
 
       final_table <- tbl_summary(
         data = table_data,
@@ -329,7 +330,7 @@ tbl_summary_addin <- function(){
         missing_text = input$missing_text
       )
 
-      #Add columns --------------------------------------------
+      # >> gtsummary::add_p() --------------------------------------------
       if(input$add_p_condition){
         final_table <- final_table %>%
           add_p(test = list(all_continuous()  ~ input$add_p_continuous,
@@ -338,12 +339,14 @@ tbl_summary_addin <- function(){
         #do nothing
       }
 
+      # >> gtsummary::add_overall ---------------------------------------
       if(input$add_overall_condition){
 
         final_table <- final_table %>%
           add_overall(last = input$add_overall_last, col_label = input$add_overall_label)
       }
 
+      # >> gtsummary::add_n()--------------------------------------------
       if(input$add_n_condition){
         final_table <- final_table %>%
           add_n()
@@ -352,8 +355,9 @@ tbl_summary_addin <- function(){
       return(final_table)
     })
 
-    #generate ui for column_type_setting------------------
+    # [Column Type setting UI]----------------------------------------
 
+    # > setting_table() -------------------
     setting_table <- reactive({
       req(dat())
 
@@ -370,6 +374,7 @@ tbl_summary_addin <- function(){
       return(settings)
     })
 
+    # > output$set_column_type----------------
     output$set_column_type <- renderUI({
       req(setting_table())
       settings <- setting_table()
@@ -386,7 +391,7 @@ tbl_summary_addin <- function(){
       return(finui)
     })
 
-    #type_argument-----------------------
+    # > type_argument() -----------------------
     type_argument <- reactive({
       req(setting_table())
 
@@ -402,7 +407,9 @@ tbl_summary_addin <- function(){
 
     })
 
-    #modify appearance----------------------------
+    #[Modify Appearance] ----------------------------
+
+    # > header_names() ------------------------------
     header_names <- reactive({
       req(summary_table())
       summary_table() %>%
@@ -411,14 +418,13 @@ tbl_summary_addin <- function(){
         return()
     })
 
-
+    # > modify_apeearance()-------------------------
     modified_appearance <- reactive({
       req(summary_table())
       fin <- summary_table()
 
       if(!is.null(input$label)){
-        fin <- fin %>%
-          modify_header(label = input$label)
+        fin <- fin %>% modify_header(label = input$label)
       }
 
 
@@ -427,21 +433,15 @@ tbl_summary_addin <- function(){
       }else if(input$spanning_header == ""){
 
       }else{
-        fin <- fin %>%
-          modify_spanning_header(
-            starts_with("stat_") ~ input$spanning_header
-          )
+        fin <- fin %>% modify_spanning_header(starts_with("stat_") ~ input$spanning_header)
       }
 
-      if(input$bold_label){
-        fin <- fin %>%
-          bold_labels()
-      }
+      if(input$bold_label){ fin <- fin %>% bold_labels() }
 
       return(fin)
     })
 
-    #generate UI for modify appearance----------------
+    # > output$header: generate UI for modify appearance----------------
     output$header <- renderUI({
       req(header_names())
       hd <- header_names()
@@ -468,7 +468,8 @@ tbl_summary_addin <- function(){
       return(head_ui)
     })
 
-    # Under construction ---------------------------
+    # [UNDER CONSTRUCTION] ----------------------------
+    # > Under construction ---------------------------
     # output$footer <- renderUI({
     #   req(header_names())
     #   hd <- header_names()
@@ -494,13 +495,15 @@ tbl_summary_addin <- function(){
     #
     # })
 
-    #@ Script text: output------------------------
-    output$script <- renderText({
+    # [Script Text]-----------------------------------
+    # > make script to copy and display -------------------
+    script_to_generate_table <- reactive({
       filename <- ""
-      #_set_by-----
+
+      # >> set_by-----
       if(input$by == "NA") set_by <- "NULL" else set_by <- input$by
 
-      #_set_label----
+      # >> set_label----
       editted_label <- tryCatch(
         expr = {label_vector()},
         error = function(e) {
@@ -520,7 +523,7 @@ tbl_summary_addin <- function(){
           str_c("list(\n",.,"\n  )")
       }
 
-      #_type_argument-------
+      # >> type_argument-------
       if(is.null(type_argument())){
         set_type <- "NULL"
       }else{
@@ -534,7 +537,7 @@ tbl_summary_addin <- function(){
           str_c("list(\n",.,"\n  )")
       }
 
-      #_add header------------
+      # >> add header------------
 
       if(!is.null(input$label)){
         add1 <- "summarised_table <- summarised_table %>% \n  modify_header(label = '{input$label}')\n\n"
@@ -558,7 +561,7 @@ tbl_summary_addin <- function(){
 
       add_header <- c(add1,add2,add3) %>% str_c(collapse = "")
 
-      #_add columns----------------------------
+      # >> add columns----------------------------
       if(input$add_p_condition){
         add_col1_1 <- "summarised_table <- summarised_table %>% \n"
         add_col1_2 <- "  add_p(test = list(all_continuous()  ~ '{input$add_p_continuous}',\n"
@@ -591,6 +594,7 @@ tbl_summary_addin <- function(){
       ) %>%
         str_c(collapse = "")
 
+      # >> base_text --------------------------
       base_text <- c(
         "#THIS TEXT IS EXPERIMENTAL AND IS UNDER DEVELOPMENT",
         "library(tidyverse)",
@@ -623,21 +627,28 @@ tbl_summary_addin <- function(){
       return(str_glue(fintext))
     })
 
-    #@ Script text: copy button-----------------
-    observeEvent(input$copy_script, ~{
-      browser()
-      write_clip("test")
+    # > output$script ------------------------
+    output$script <- renderText({ script_to_generate_table() })
+
+    # [Buttons] ---------------------------------------
+    # > Make clip button ------------------------------
+    output$clip <- renderUI({
+      rclipButton(
+        "clipbtn",
+        label="Copy to clipboard",
+        clipText=script_to_generate_table(),
+        icon=icon("clipboard")
+      )
     })
 
-    #Output---------------------------
+    # [Output] ---------------------------
     output$table1 <- gt::render_gt({
 
       req(dat())
       modified_appearance() %>% as_gt()
     })
 
-    #DL button logic--------------------------------------
-
+    # [DL button] --------------------------------------
     output$dltable_word <- downloadHandler(
       filename = function() {"table1.docx"},
       content = function(file){

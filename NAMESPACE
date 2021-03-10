@@ -3,6 +3,7 @@
 import(dplyr)
 import(gtsummary)
 import(miniUI)
+import(rclipboard)
 import(shiny)
 import(shinyWidgets)
 import(stringr)
