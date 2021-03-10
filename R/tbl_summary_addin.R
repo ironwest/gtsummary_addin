@@ -138,6 +138,7 @@ tbl_summary_addin <- function(){
     hide("dltable_csv")
     hide("var")
     hide("by")
+    hide("percent")
     hide("add_p_condition")
     hide("add_p_categorical")
     hide("add_p_continuous")
@@ -265,6 +266,7 @@ tbl_summary_addin <- function(){
       show("drop_down_set_column_type")
       show("bold_label")
       show("footnote")
+      show("percent")
     })
 
     #[Load Data] ---------------------------------------
@@ -275,8 +277,9 @@ tbl_summary_addin <- function(){
     # > dat() ------------------------------------
     dat <- reactive({
       req(variable_name())
-      browser()
-      read_this <- eval(parse(text=variable_name()))
+
+      variable_name()
+      read_this <- eval(expr=parse(text=variable_name()), envir=.GlobalEnv)
       return(read_this)
     })
 
@@ -286,9 +289,10 @@ tbl_summary_addin <- function(){
     summary_table <- reactive({
       req(dat())
 
+      # >> table_data----------------
       table_data <- dat()
 
-      # >> set by name depend on renamed vector----------------
+      # >> set_by: name depend on renamed vector----------------
       if(input$by == "NA"){ set_by <- NULL }else{ set_by <- input$by }
 
       # >> select data depend on input$var-----------------------
@@ -299,7 +303,7 @@ tbl_summary_addin <- function(){
           select(input$var)
       }
 
-      # >> make list for label---------------------------
+      # >> set_label: make list for label---------------------------
       editted_label <- tryCatch(
         expr = {label_vector()},
         error = function(e) {
@@ -333,7 +337,7 @@ tbl_summary_addin <- function(){
         missing = "ifany", #Not implemented yet: "no","ifany","always"
         missing_text = input$missing_text,
         sort = NULL,       # Not implemented yet
-        percent = "column" # Not implemented yet (column, row, cell)
+        percent = input$percent # Not implemented yet (column, row, cell)
       )
 
       # >> gtsummary::add_p() --------------------------------------------
