@@ -27,7 +27,8 @@ tbl_summary_addin <- function(){
   #call module------------------------
   variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
-  #UI parts: Setting for sidebar panel-----------------------------------------------------------
+  #[UI parts]------------------
+  # > Sidebar panel-----------------------------------------------------------
   setting_by <- selectInput("by", label = "Group By", choices = NA)
   setting_variables <- pickerInput("var", label="Select Variables", choices=NA, options=list(`actions-box`=TRUE), multiple=TRUE)
   setting_statistics <- div(
@@ -46,7 +47,8 @@ tbl_summary_addin <- function(){
   setting_missingtext <- textInput("missing_text","Missing text", value = "(Missing)")
   setting_percent <- selectInput("percent", "Percent", choices = c("column", "row", "cell"), selected = "column")
 
-  #UI parts:setting for dropdown-----------------------------------------------------------------
+  # > Dropdown component-----------------------------------------------------------------
+  # >> Add column----------------------
   setting_add_p <- div(
     materialSwitch("add_p_condition","Add p", status = "primary"),
     selectInput("add_p_categorical", "Test for categorical data", choices=add_p_tbl_summary_test(), selected="chisq.test"),
@@ -63,7 +65,14 @@ tbl_summary_addin <- function(){
     materialSwitch("add_n_condition", label="Add N", status="primary")
   )
 
-  #UI parts: dropdown buttons---------------------------
+  # >> Theme ----------------------
+  setting_theme_language     <- selectInput("language", "Select Language", choices=c("de", "en", "es", "fr", "gu", "hi", "ja", "mr", "pt", "se", "zh-cn","zh-tw"), selected = "en")
+  setting_theme_decimal_mark <- textInput("decimal_mark", "Decimal Mark:", ".")
+  setting_theme_big_mark     <- textInput("big_mark", "Big Mark:", ",")
+  setting_theme_iqr_sep      <- textInput("iqr_sep", "IQR Sep:", "-")
+  setting_theme_ci_sep       <- textInput("ci_sep", "CI Sep:", "-")
+
+  # > Dropdown buttons---------------------------
   dropdown_add_column <- dropdownButton(
     label="Add Columns (p,N,overall)",
     setting_add_p, setting_add_overall, setting_add_n,
@@ -87,17 +96,28 @@ tbl_summary_addin <- function(){
     circle=FALSE, status="primary", icon=icon("cat"), width=12
   )
 
-  #UI parts:dlbuttons -------------------------------------
+  dropdown_theme_setting <- dropdownButton(
+    label = "Set Theme for Table",
+    setting_theme_language,setting_theme_decimal_mark,setting_theme_big_mark,
+    setting_theme_iqr_sep,setting_theme_ci_sep,
+    circle=FALSE, status="primary", icon=icon("paint-roller")
+  )
+
+  # > Dlbuttons -------------------------------------
 
   dlbutton_excel <- downloadButton("dltable_word", "DL(Word)")
   dlbutton_csv <- downloadButton("dltable_csv", "DL(CSV)(data only)")
   dlbutton_html <- downloadButton("dltable_html", "DL(HTML)")
 
-  #UI parts: copy button-------------------------------------
+  # > Copy button-------------------------------------
   button_copy_script <- uiOutput("clip")
 
-  #UI------------------------------
+  # @@@UI ------------------------------
   ui <- fluidPage(
+    tags$style(type="text/css","#decimal_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css","#big_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css","#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css","#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
     useShinyjs(),
     rclipboardSetup(),
     titlePanel("Interactive tbl_summary"),
@@ -114,7 +134,8 @@ tbl_summary_addin <- function(){
                  dropdown_add_column     , hr(),
                  dropdown_modify_label   , hr(),
                  dropdown_set_column_type, hr(),
-                 dropdown_header_setting , hr()),
+                 dropdown_header_setting , hr(),
+                 dropdown_theme_setting  , hr()),
           column(width = 10, shinycssloaders::withSpinner(gt::gt_output("table1")))
         ),
         fluidRow(
@@ -150,6 +171,7 @@ tbl_summary_addin <- function(){
     hide("drop_down_modify_label")
     hide("drop_down_header_setting")
     hide("drop_down_set_column_type")
+    hide("dropdown_theme_setting")
     hide("dltable_html")
     hide("bold_label")
     hide("footnote_p")
@@ -262,6 +284,7 @@ tbl_summary_addin <- function(){
       show("drop_down_modify_label")
       show("drop_down_header_setting")
       show("drop_down_set_column_type")
+      show("dropdown_theme_setting")
       show("bold_label")
       show("footnote")
       show("percent")
@@ -319,8 +342,16 @@ tbl_summary_addin <- function(){
         set_label <- as.list(nam) %>% set_names(val)
       }
 
-      # >> gtsummary::tbl_summary() -----------------------------------
+      # >> gtsummary::theme_gtsummary_language()-------------------------
+      theme_gtsummary_language(
+        language=input$language,
+        decimal.mark=input$decimal_mark,
+        big.mark=input$big_mark,
+        iqr.sep=input$iqr_sep,
+        ci.sep=input$ci_sep
+      )
 
+      # >> gtsummary::tbl_summary() -----------------------------------
       final_table <- tbl_summary(
         data = table_data,
         by = set_by,
