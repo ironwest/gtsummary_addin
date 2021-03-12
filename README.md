@@ -10,7 +10,7 @@ Currently, add-in for `gtsummary::tbl_summary` is implemented.
 
 ## How to use
 
-After installation, tbl_summary addin willadded to the RStudio. Create desired tibble or data.frame in the global environment, start addin, and select the tibble/data.frame.
+After installation, tbl_summary addin will added to the RStudio. Create desired tibble or data.frame in the global environment, start addin, and select the tibble/data.frame.
 
 ## Next:
 
