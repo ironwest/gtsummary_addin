@@ -22,7 +22,6 @@
 #' @import rclipboard
 
 tbl_summary_addin <- function(){
-
   #call module------------------------
   variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
@@ -111,12 +110,20 @@ tbl_summary_addin <- function(){
   # > Copy button-------------------------------------
   button_copy_script <- uiOutput("clip")
 
+
+  # > JS code----------------
+  js_get_screensize <-'$(document).on("shiny:connected", function(e) {var jsWidth = screen.width;Shiny.onInputChange("GetScreenWidth",jsWidth);});'
+
+  # > CSS code--------------------
+  css_bigfont <- function(inputId){str_c("#",inputId,".shiny-bound-input{font-size: 32px; line-height: 40px}")}
+
   # @@@UI ------------------------------
   ui <- fluidPage(
-    tags$style(type="text/css","#decimal_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css","#big_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css","#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css","#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css",css_bigfont("decimal_mark") ),#decimal_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css",css_bigfont("big_mark") ),#big_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css",css_bigfont("iqr_sep") ),#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css",css_bigfont("ci_sep") ),#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$script(jscode),
     useShinyjs(),
     rclipboardSetup(),
     titlePanel("Interactive tbl_summary"),
@@ -303,25 +310,34 @@ tbl_summary_addin <- function(){
       return(read_this)
     })
 
+    # > selected_data()-----------------------------
+    selected_data <- reactive({
+      req(dat())
+
+      return_this <- dat()
+
+      # >> select data depend on input$var-----------------------
+      if(is.null(input$var)){
+        return_this <- tibble(` ` = "Select at least one variable")
+      }else{
+        return_this <- return_this %>%
+          select(input$var)
+      }
+
+      return(return_this)
+    })
+
     # [Make Summary Table] -------------------------------------------------
 
     # > summary_table() ----------------------------------------
     summary_table <- reactive({
-      req(dat())
+      req(selected_data())
 
       # >> table_data----------------
-      table_data <- dat()
+      table_data <- selected_data()
 
       # >> set_by: name depend on renamed vector----------------
       if(input$by == "NA"){ set_by <- NULL }else{ set_by <- input$by }
-
-      # >> select data depend on input$var-----------------------
-      if(is.null(input$var)){
-        table_data <- tibble(` ` = "Select at least one variable")
-      }else{
-        table_data <- table_data %>%
-          select(input$var)
-      }
 
       # >> set_label: make list for label---------------------------
       editted_label <- tryCatch(
@@ -507,7 +523,6 @@ tbl_summary_addin <- function(){
 
       return(head_ui)
     })
-
 
     # [Script Text]-----------------------------------
     # > make script to copy and display -------------------
@@ -696,7 +711,7 @@ tbl_summary_addin <- function(){
     )
   }
 
-  viewer <- browserViewer()
+  viewer <- dialogViewer(dialogName ="tbl_summary_addin",width=1200, height=600)
   runGadget(ui, server, viewer = viewer)
 
 }
