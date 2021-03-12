@@ -110,10 +110,6 @@ tbl_summary_addin <- function(){
   # > Copy button-------------------------------------
   button_copy_script <- uiOutput("clip")
 
-
-  # > JS code----------------
-  js_get_screensize <-'$(document).on("shiny:connected", function(e) {var jsWidth = screen.width;Shiny.onInputChange("GetScreenWidth",jsWidth);});'
-
   # > CSS code--------------------
   css_bigfont <- function(inputId){str_c("#",inputId,".shiny-bound-input{font-size: 32px; line-height: 40px}")}
 
@@ -123,7 +119,6 @@ tbl_summary_addin <- function(){
     tags$style(type="text/css",css_bigfont("big_mark") ),#big_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
     tags$style(type="text/css",css_bigfont("iqr_sep") ),#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
     tags$style(type="text/css",css_bigfont("ci_sep") ),#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$script(jscode),
     useShinyjs(),
     rclipboardSetup(),
     titlePanel("Interactive tbl_summary"),
@@ -220,9 +215,9 @@ tbl_summary_addin <- function(){
 
     # > Edit label------------------------------
     output$edit_label <- renderUI({
-      req(dat())
+      req(selected_data())
 
-      tgtcols <- colnames(dat())
+      tgtcols <- colnames(selected_data())
 
       returning_ui <- div(
         map(tgtcols, ~{
@@ -415,9 +410,9 @@ tbl_summary_addin <- function(){
 
     # > setting_table() -------------------
     setting_table <- reactive({
-      req(dat())
+      req(selected_data())
 
-      current_data <- dat()
+      current_data <- selected_data()
 
       settings <-enframe(map(current_data, class)) %>%
         unnest(value) %>%
@@ -682,7 +677,6 @@ tbl_summary_addin <- function(){
 
     # [Output] ---------------------------
     output$table1 <- gt::render_gt({
-
       req(dat())
       modified_appearance() %>% as_gt()
     })
@@ -691,13 +685,15 @@ tbl_summary_addin <- function(){
     output$dltable_word <- downloadHandler(
       filename = function() {"table1.docx"},
       content = function(file){
-        render( system.file("extdata","word_template.rmd", package="egsummaryAddin"), output_file = file)
+
+        render( system.file("extdata","word_template.Rmd", package="gtsummaryAddin", mustWork = TRUE), output_file = file)
       }
     )
 
     output$dltable_csv <- downloadHandler(
       filename = function() {"table1.csv"},
       content = function(file){
+
         temp <- modified_appearance() %>% as_tibble()
         write_csv(temp,file)
       }
@@ -706,7 +702,7 @@ tbl_summary_addin <- function(){
     output$dltable_html <- downloadHandler(
       filename = function(){"table1.html"},
       content = function(file){
-        render( system.file("extdata","html_template.rmd", package="egsummaryAddin"), output_file = file)
+        render( system.file("extdata","html_template.rmd", package="gtsummaryAddin", mustWork = TRUE), output_file = file)
       }
     )
   }
