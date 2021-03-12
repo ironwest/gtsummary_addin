@@ -711,7 +711,7 @@ tbl_summary_addin <- function(){
     )
   }
 
-  viewer <- dialogViewer(dialogName ="tbl_summary_addin",width=1200, height=600)
+  viewer <- browserViewer()
   runGadget(ui, server, viewer = viewer)
 
 }
