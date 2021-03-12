@@ -14,7 +14,6 @@
 #' @importFrom rlang set_names
 #' @importFrom rmarkdown render
 #' @importFrom flextable as_flextable
-#' @importFrom clipr write_clip
 #' @import gtsummary
 #' @import miniUI
 #' @import shiny
@@ -343,6 +342,8 @@ tbl_summary_addin <- function(){
       }
 
       # >> gtsummary::theme_gtsummary_language()-------------------------
+      reset_gtsummary_theme()
+
       theme_gtsummary_language(
         language=input$language,
         decimal.mark=input$decimal_mark,
@@ -402,10 +403,10 @@ tbl_summary_addin <- function(){
 
       current_data <- dat()
 
-      settings <- enframe(map(current_data, class)) %>%
+      settings <-enframe(map(current_data, class)) %>%
         unnest(value) %>%
         mutate(type = case_when(
-          value %in% c("numeric") ~ "continuous",
+          value %in% c("numeric", "integer") ~ "continuous",
           value %in% c("factor","character","logical") ~ "categorical"
         )) %>%
         mutate(id = str_c("type_",1:n()))
@@ -507,37 +508,11 @@ tbl_summary_addin <- function(){
       return(head_ui)
     })
 
-    # [UNDER CONSTRUCTION] ----------------------------
-    # > Under construction ---------------------------
-    # output$footer <- renderUI({
-    #   req(header_names())
-    #   hd <- header_names()
-    #   length_hd <- nrow(hd)
-    #
-    #   if("p.value" %in% hd$column){
-    #     p_label <- modified_appearance()$table_header %>%
-    #       filter(column == "p.value") %>%
-    #       pull(footnote)
-    #
-    #     show("footnote_p")
-    #   }else{
-    #     p_label <- ""
-    #     hide("footnote_p")
-    #   }
-    #
-    #   footer_ui <- fluidRow(
-    #     column(width = 4,
-    #            textInput("footnote"  ,"1) Statistics footnote", "Statistics presented: Mean(SD); n / N (%)"),
-    #            textInput("footnote_p","2) P-value footnote"   , p_label)
-    #     )
-    #   )
-    #
-    # })
 
     # [Script Text]-----------------------------------
     # > make script to copy and display -------------------
     script_to_generate_table <- reactive({
-      filename <- ""
+      var_name <- variable_name()
 
       # >> set_by-----
       if(input$by == "NA") set_by <- "NULL" else set_by <- input$by
@@ -638,11 +613,19 @@ tbl_summary_addin <- function(){
         "#THIS TEXT IS EXPERIMENTAL AND IS UNDER DEVELOPMENT",
         "library(tidyverse)",
         "library(gtsummary)",
-        "# Read data from csv------------------------------------",
+        "",
+        "# Set theme for table ---------------------------------",
+        "theme_gtsummary_language(",
+        "  language = '{input$language}',",
+        "  decimal.mark = '{input$decimal_mark}',",
+        "  big.mark = '{input$big_mark}',",
+        "  iqr.sep = '{input$iqr_sep}',",
+        "  ci.sep = '{input$ci_sep}',",
+        ")",
         "",
         "# Make summary table-----------------------------------",
         "summarised_table <- tbl_summary(",
-        "  data  = csv_data,",
+        "  data  = {var_name},",
         "  by    = {set_by},",
         "  label = {set_label},",
         "  type  = {set_type},",
@@ -651,7 +634,9 @@ tbl_summary_addin <- function(){
         "    all_categorical() ~ '{input$statistics_categorical}'",
         "  ),",
         "  digits = list(all_continuous() ~ {input$digits}),",
-        "  missing_text = '{input$missing_text}'",
+        "  missing = '{input$missing}',",
+        "  missing_text = '{input$missing_text}',",
+        "  percent = '{input$percent}'",
         ")",
         "",
         "#Add Header--------------------------",

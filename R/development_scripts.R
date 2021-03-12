@@ -16,3 +16,7 @@
 # }
 #
 # shinyApp(ui,server)
+
+#dat <- iris
+# library(palmerpenguins)
+# ppp <- penguins
