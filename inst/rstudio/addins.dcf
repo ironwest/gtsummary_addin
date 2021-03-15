@@ -1,9 +1,9 @@
-Name:tbl_summary_from_csv
-Description: Apply tbl_summary interactively to external csv file.
-Binding: tbl_summary_addin
-Interactive: true
-
 Name: tbl_summary
 Description: Apply tbl_summary interactively to data.frame/tibble in current environment.
 Binding: tbl_summary_addin
+Interactive: true
+
+Name: tbl_regression
+Description: Apply tbl_regression interactively to model in current environment.
+Binding: tbl_regression_addin
 Interactive: true

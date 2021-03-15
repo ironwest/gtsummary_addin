@@ -8,7 +8,7 @@ load_environmental_variable <- function(type="data.frame"){
   return(
     current_variable[
       map_lgl(current_variable, ~{
-        type %in% class(get(.))
+        any(type %in% class(get(.)))
       })
     ]
   )
@@ -49,7 +49,7 @@ variableLoaderModalServer <- function(id, target_type="data.frame"){
       }else{
         ui_select_target <- selectInput(
           inputId = ns("select_target"),
-          label = str_glue("Select `{target_type}` class variable."),
+          label = str_glue("Select `{str_c(target_type, collapse='/')}` class variable."),
           choices=target_variable_vector)
       }
 
