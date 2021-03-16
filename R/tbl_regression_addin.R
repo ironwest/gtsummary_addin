@@ -210,12 +210,13 @@ tbl_regression_addin <- function(){
         val <- editted_label %>% as.character()
         nam <- editted_label %>% names()
 
-        set_label <- map2_chr(val,nam,~{str_glue('    "{.x}" = "{.y}"')}) %>%
+        set_label <- map2_chr(val,nam,~{str_glue('    "{.y}" = "{.x}"')}) %>%
           str_c(collapse = ",\n") %>%
           str_c("list(\n",.,"\n  )")
       }
 
       string_include <- str_c("c('", str_c(input$include, collapse="','"), "')")
+
 
       # >> base_text --------------------------
       base_text <- c(
