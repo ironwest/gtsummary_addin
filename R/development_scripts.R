@@ -16,7 +16,7 @@
 # }
 #
 #
-# #stats::lm
+# stats::lm
 # fmla_con_multi <- "flipper_length_mm ~ sex + island + species + bill_length_mm + body_mass_g"
 # model_lm <- lm(formula = fmla_con_multi, data = ppp)
 #
@@ -28,6 +28,8 @@
 # #stats::glm
 # fmla_dic_multi <- "sex ~ flipper_length_mm + island + species + bill_length_mm + body_mass_g"
 # model_glm <- glm(formula = fmla_dic_multi, data = ppp, family = binomial)
+#
+# model_glm_inter <- glm(formula = sex ~ flipper_length_mm*island*species, data=ppp, family=binomial)
 #
 # model_glm$model %>% colnames()
 #

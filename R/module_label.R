@@ -28,8 +28,6 @@ labelModifyDropDownServer <- function(id, label_data){
 
     #Make label editor ui--------------------------------
     output$edit_label <- renderUI({
-
-
       is_data_table <- "data.frame" %in% class(label_data)
       is_model      <- any(c("lm", "glm", "coxph", "clogit", "survreg", "geeglm", "gee") %in% class(label_data))
       is_lmer_model <- any(c("glmerMod", "lmerMod") %in% class(label_data))
@@ -42,10 +40,13 @@ labelModifyDropDownServer <- function(id, label_data){
         tgtcols <- "Not Implemented"
       }
 
+      replaced <- tgtcols %>%
+        str_replace(.,":","___colon12345678910___")
+
       returning_ui <- div(
-        map(tgtcols, ~{
-          acol <- .
-          aId <- str_c(ns("col_label_"), .)
+        map2(tgtcols, replaced, ~{
+          acol <- .x
+          aId <- str_c(ns("col_label_"), .y)
           return(textInput(inputId = aId, label = acol, value = acol))
         }),
         actionButton(ns("update_label"),"Update Label")
@@ -64,7 +65,7 @@ labelModifyDropDownServer <- function(id, label_data){
         unnest(value) %>%
         mutate(id = str_remove(id, "col_label_"))
 
-      val <- label_inputs$id %>% as.character()
+      val <- label_inputs$id %>% as.character() %>% str_replace(.,"___colon12345678910___",":")
       nam <- label_inputs$value
 
       set_label <- as.list(nam) %>% set_names(val)
@@ -81,8 +82,22 @@ labelModifyDropDownServer <- function(id, label_data){
 #' Function for obtain terms from model object
 #'
 
-get_terms_from_model <- function(mod){
-  attributes(mod$terms)$term.labels
+get_terms <- function(mod){
+
+
+  if(class(mod) %in% c("lmerMod","glmerMod")){
+    res <- list()
+  }else{
+    res <- tryCatch(expr = {
+      temp <- attributes(mod$terms)$term.labels
+      temp <- temp %>%
+        {.[!str_detect(.,"strata\\(.+\\)")]}
+      return(temp)
+    },errors = function(e){ list()} )
+  }
+
+  return(res)
+
 }
 
 #----------------------------------
@@ -100,7 +115,7 @@ get_terms_from_model <- function(mod){
 # )
 #
 # server <- function(input,output,session){
-#   res <- labelModifyDropDownServer(id = "test", label_data = model_glm)
+#   res <- labelModifyDropDownServer(id = "test", label_data = model_lmer)
 #
 #   observeEvent(res(),{
 #

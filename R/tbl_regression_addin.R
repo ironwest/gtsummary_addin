@@ -33,7 +33,7 @@ tbl_regression_addin <- function(){
   setting_single_row    <- pickerInput("single_row", label="Show Single Row", choices = NA, options=list(`actions-box`=TRUE), multiple=TRUE)
   setting_conf_level    <- numericInput("conf_level", label = "Confidence Level", min = 0, max = 1, value = 0.95, step = 0.01)
   setting_intercept     <- awesomeCheckbox("intercept", label="Intercept", value = FALSE)
-  setting_add_reference <- awesomeCheckbox("add_reference", label="Add Referenct", value=FALSE)
+  setting_add_reference <- awesomeCheckbox("add_reference", label="Add Reference", value=FALSE)
 
   # > Dropdown component-----------------------------------------------------------------
 
@@ -161,12 +161,22 @@ tbl_regression_addin <- function(){
         ci.sep=input$ci_sep
       )
 
+      # >> make function for include  ---------------------------
+      if(is.null(input$include)){
+        terms_to_include <- get("everything")
+      }else{
+        terms_to_include <- function(){
+          input$include
+        }
+      }
+
+
       # >> gtsummary::tbl_regression() -----------------------------------
       final_table <- tbl_regression(
         model,
         label = editted_label,
         exponentiate = input$exponentiate,
-        include = input$include,
+        include = terms_to_include(),
         show_single_row = NULL, #not implemented
         conf.level = input$conf_level,
         intercept = input$intercept,
