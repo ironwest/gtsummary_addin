@@ -7,7 +7,6 @@ labelModifyDropDownUI <- function(id){
 
   ns <- NS(id)
 
-
   label_modify_dropdown <- dropdownButton(
     label="Variable Label Setting",
     uiOutput(ns("edit_label")),
@@ -29,19 +28,16 @@ labelModifyDropDownServer <- function(id, label_data){
     #Make label editor ui--------------------------------
     output$edit_label <- renderUI({
       is_data_table <- "data.frame" %in% class(label_data)
-      is_model      <- any(c("lm", "glm", "coxph", "clogit", "survreg", "geeglm", "gee") %in% class(label_data))
-      is_lmer_model <- any(c("glmerMod", "lmerMod") %in% class(label_data))
+      is_model      <- any(c("lm", "glm", "coxph", "clogit", "survreg", "geeglm", "gee","glmerMod", "lmerMod") %in% class(label_data))
 
       if(is_data_table){
         tgtcols <- colnames(label_data)
       }else if(is_model){
         tgtcols <- get_terms(label_data)
-      }else if(is_lmer_model){
-        tgtcols <- "Not Implemented"
       }
 
       replaced <- tgtcols %>%
-        str_replace(.,":","___colon12345678910___")
+        str_replace_all(.,":","___colon12345678910___")
 
       returning_ui <- div(
         map2(tgtcols, replaced, ~{
@@ -65,7 +61,7 @@ labelModifyDropDownServer <- function(id, label_data){
         unnest(value) %>%
         mutate(id = str_remove(id, "col_label_"))
 
-      val <- label_inputs$id %>% as.character() %>% str_replace(.,"___colon12345678910___",":")
+      val <- label_inputs$id %>% as.character() %>% str_replace_all(.,"___colon12345678910___",":")
       nam <- label_inputs$value
 
       set_label <- as.list(nam) %>% set_names(val)
@@ -84,17 +80,7 @@ labelModifyDropDownServer <- function(id, label_data){
 
 get_terms <- function(mod){
 
-
-  if(class(mod) %in% c("lmerMod","glmerMod")){
-    res <- list()
-  }else{
-    res <- tryCatch(expr = {
-      temp <- attributes(mod$terms)$term.labels
-      temp <- temp %>%
-        {.[!str_detect(.,"strata\\(.+\\)")]}
-      return(temp)
-    },errors = function(e){ list()} )
-  }
+  res <- unique(tbl_regression(mod)$table_body$variable)
 
   return(res)
 
