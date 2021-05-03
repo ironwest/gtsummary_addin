@@ -14,6 +14,7 @@
 #' @importFrom rlang set_names
 #' @importFrom rmarkdown render
 #' @importFrom flextable as_flextable
+#' @importFrom bsplus bs_embed_popover shiny_iconlink
 #' @import gtsummary
 #' @import miniUI
 #' @import shiny

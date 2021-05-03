@@ -4,8 +4,7 @@
 #' @param input_object object to add popover help.
 #' @param link_text text to show in popover help.
 #' @param link_url url for desired destination.
-#' @importFrom bsplus bs_embed_popover
-#' @importFrom bsplus shiny_iconlink
+#' @importFrom bsplus bs_embed_popover shiny_iconlink
 #' @import shiny
 
 add_popover_help <- function(input_object, link_text, link_url){
