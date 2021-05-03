@@ -2,7 +2,7 @@
 % Please edit documentation in R/argument_options.R
 \name{add_p_tbl_summary_test}
 \alias{add_p_tbl_summary_test}
-\title{Argument option for tbl_summary %>%  add_p()}
+\title{Argument option for tbl_summary.add_p}
 \usage{
 add_p_tbl_summary_test()
 }
@@ -10,5 +10,5 @@ add_p_tbl_summary_test()
 character vector
 }
 \description{
-Argument option for tbl_summary %>%  add_p()
+Argument option for tbl_summary.add_p
 }

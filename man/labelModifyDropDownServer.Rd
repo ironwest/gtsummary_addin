@@ -6,6 +6,11 @@
 \usage{
 labelModifyDropDownServer(id, label_data)
 }
+\arguments{
+\item{id}{an id}
+
+\item{label_data}{label_data to display in the module.}
+}
 \description{
 Module: Server for labelling dropdown menu
 }

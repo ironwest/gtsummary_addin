@@ -2,6 +2,7 @@
 #'
 #' @import shiny
 #' @import shinyWidgets
+#' @param id an id
 
 labelModifyDropDownUI <- function(id){
 
@@ -19,6 +20,8 @@ labelModifyDropDownUI <- function(id){
 
 #' Module: Server for labelling dropdown menu
 #'
+#' @param id an id
+#' @param label_data label_data to display in the module.
 #' @import shiny
 
 labelModifyDropDownServer <- function(id, label_data){
@@ -76,7 +79,8 @@ labelModifyDropDownServer <- function(id, label_data){
 }
 
 #' Function for obtain terms from model object
-#'
+#' @param mod model object
+#' @import gtsummary
 
 get_terms <- function(mod){
 

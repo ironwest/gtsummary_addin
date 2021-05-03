@@ -48,7 +48,7 @@ tbl_summary_addin <- function(){
   # > Dropdown component-----------------------------------------------------------------
   # >> Add column----------------------
   setting_add_p <- div(
-    materialSwitch("add_p_condition","Add p", status = "primary"),
+    materialSwitch("add_p_condition","Add p", status = "primary") %>% add_popover_help("add p value","http://www.danieldsjoberg.com/gtsummary/reference/add_p.tbl_survfit.html"),
     selectInput("add_p_categorical", "Test for categorical data", choices=add_p_tbl_summary_test(), selected="chisq.test"),
     selectInput("add_p_continuous" , "Test for continuous data" , choices=add_p_tbl_summary_test(), selected="kruskal.test")
   )
@@ -120,6 +120,7 @@ tbl_summary_addin <- function(){
     tags$style(type="text/css",css_bigfont("iqr_sep") ),#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
     tags$style(type="text/css",css_bigfont("ci_sep") ),#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
     useShinyjs(),
+    use_bs_popover(),
     rclipboardSetup(),
     titlePanel("Interactive tbl_summary"),
     sidebarLayout(
@@ -150,6 +151,7 @@ tbl_summary_addin <- function(){
   #@@@ SERVER----------------------------------
 
   server <- function(input, output, session) {
+
 
     # Hide all UI ----------------------------------
     hide("dltable_word")

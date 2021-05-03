@@ -6,6 +6,9 @@
 \usage{
 labelModifyDropDownUI(id)
 }
+\arguments{
+\item{id}{an id}
+}
 \description{
 Module:UI for labelling dropdown menu
 }

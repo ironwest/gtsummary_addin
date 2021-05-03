@@ -8,7 +8,7 @@ tbl_summary_type <- function(){
   )
 }
 
-#' Argument option for tbl_summary %>%  add_p()
+#' Argument option for tbl_summary.add_p
 #'
 #' @return character vector
 
