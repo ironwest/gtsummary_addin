@@ -7,7 +7,7 @@
 load_environmental_variable(type = "data.frame")
 }
 \arguments{
-\item{type}{Either Currently "data.frame" (for tbl_summary) only.}
+\item{type}{Currently "data.frame" (for tbl_summary) only.}
 }
 \description{
 Internal function for load variable from environment.

@@ -1,5 +1,5 @@
 #' Internal function for load variable from environment.
-#' @param type Either Currently "data.frame" (for tbl_summary) only.
+#' @param type Currently "data.frame" (for tbl_summary) only.
 #' @importFrom purrr map_lgl
 
 load_environmental_variable <- function(type="data.frame"){
