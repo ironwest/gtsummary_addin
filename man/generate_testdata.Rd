@@ -4,7 +4,7 @@
 \alias{generate_testdata}
 \title{Testdata Creation with missing values}
 \usage{
-generate_testdata(n, with_date = TRUE, with_na = TRUE)
+generate_testdata(n, with_date = FALSE, with_na = TRUE)
 }
 \value{
 tibble return tibble data.frame

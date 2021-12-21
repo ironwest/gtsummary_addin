@@ -28,23 +28,15 @@ tbl_summary_addin <- function(){
 
   #[UI parts]------------------
   # > Sidebar panel-----------------------------------------------------------
-  setting_by <- selectInput("by", label = "Group By", choices = NA)
-  setting_variables <- pickerInput("var", label="Select Variables", choices=NA, options=list(`actions-box`=TRUE), multiple=TRUE)
-  setting_statistics <- div(
-    textInput("statistics_continuous",
-      label = "Statistics(Continuous) * use {mean / median / sd / var / min / max / p##}",
-      value = "{mean} ({sd})"
-    ),
-    textInput(
-      "statistics_categorical",
-      label = "Statistics(Categorical) * use {n / N / p}",
-      value = "{n} / {N} ({p}%)"
-    )
-  )
-  setting_digits <- numericInput("digits","Digits",value = 2, step = 1)
-  setting_missing <- selectInput("missing","Missing * Indicate whether to include count of NA values in the table", choices = c("ifany","no","always"), selected = "ifany")
-  setting_missingtext <- textInput("missing_text","Missing text", value = "(Missing)")
-  setting_percent <- selectInput("percent", "Percent", choices = c("column", "row", "cell"), selected = "column")
+  side_ui <- tbl_summary_addin_sidebar_ui() #function from tbl_summary_addin_ui.R
+
+  setting_by          <- side_ui$setting_by
+  setting_variables   <- side_ui$setting_variables
+  setting_statistics  <- side_ui$setting_statistics
+  setting_digits      <- side_ui$setting_digits
+  setting_missing     <- side_ui$setting_missing
+  setting_missingtext <- side_ui$setting_missingtext
+  setting_percent     <- side_ui$setting_percent
 
   # > Dropdown component-----------------------------------------------------------------
   # >> Add column----------------------
