@@ -70,3 +70,33 @@ tbl_summary_addin_sidebar_ui <- function(){
   )
 
 }
+
+#' generate dropdown UI for add_p for tbl_summary_addin
+#' @import shiny
+#' @importFrom shinyWidgets materialSwitch prettyCheckbox dropdownButton
+#' @return list
+
+tbl_summary_addin_dropdown_ui_add_column <- function(){
+  setting_add_p <- div(
+    materialSwitch("add_p_condition","Add p", status = "primary") %>% add_popover_help("add p value","http://www.danieldsjoberg.com/gtsummary/reference/add_p.tbl_survfit.html"),
+    selectInput("add_p_categorical", "Test for categorical data", choices=add_p_tbl_summary_test(), selected="chisq.test"),
+    selectInput("add_p_continuous" , "Test for continuous data" , choices=add_p_tbl_summary_test(), selected="kruskal.test")
+  )
+
+  setting_add_overall <- div(
+    materialSwitch("add_overall_condition", label="Add Overall", status="primary"),
+    prettyCheckbox("add_overall_last", label="Last", value=FALSE),
+    textInput("add_overall_label", label="Label", value="**Overall**, N = {N}")
+  )
+
+  setting_add_n <- div(
+    materialSwitch("add_n_condition", label="Add N", status="primary")
+  )
+
+  dropdown_add_column <- dropdownButton(
+    label="Add Columns (p,N,overall)",
+    setting_add_p, setting_add_overall, setting_add_n,
+    circle=FALSE, status="primary", icon=icon("gear"))
+
+  return(dropdown_add_column)
+}

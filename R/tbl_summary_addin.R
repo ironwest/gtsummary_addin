@@ -26,36 +26,6 @@ tbl_summary_addin <- function(){
   #call module------------------------
   variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
-  #[UI parts]------------------
-  # > Sidebar panel-----------------------------------------------------------
-  side_ui <- tbl_summary_addin_sidebar_ui() #function from tbl_summary_addin_ui.R
-
-  setting_by          <- side_ui$setting_by
-  setting_variables   <- side_ui$setting_variables
-  setting_statistics  <- side_ui$setting_statistics
-  setting_digits      <- side_ui$setting_digits
-  setting_missing     <- side_ui$setting_missing
-  setting_missingtext <- side_ui$setting_missingtext
-  setting_percent     <- side_ui$setting_percent
-
-  # > Dropdown component-----------------------------------------------------------------
-  # >> Add column----------------------
-  setting_add_p <- div(
-    materialSwitch("add_p_condition","Add p", status = "primary") %>% add_popover_help("add p value","http://www.danieldsjoberg.com/gtsummary/reference/add_p.tbl_survfit.html"),
-    selectInput("add_p_categorical", "Test for categorical data", choices=add_p_tbl_summary_test(), selected="chisq.test"),
-    selectInput("add_p_continuous" , "Test for continuous data" , choices=add_p_tbl_summary_test(), selected="kruskal.test")
-  )
-
-  setting_add_overall <- div(
-    materialSwitch("add_overall_condition", label="Add Overall", status="primary"),
-    prettyCheckbox("add_overall_last", label="Last", value=FALSE),
-    textInput("add_overall_label", label="Label", value="**Overall**, N = {N}")
-  )
-
-  setting_add_n <- div(
-    materialSwitch("add_n_condition", label="Add N", status="primary")
-  )
-
   # >> Theme ----------------------
   setting_theme_language     <- selectInput("language", "Select Language", choices=c("de", "en", "es", "fr", "gu", "hi", "ja", "mr", "pt", "se", "zh-cn","zh-tw"), selected = "en")
   setting_theme_decimal_mark <- textInput("decimal_mark", "Decimal Mark:", ".")
@@ -64,10 +34,6 @@ tbl_summary_addin <- function(){
   setting_theme_ci_sep       <- textInput("ci_sep", "CI Sep:", "-")
 
   # > Dropdown buttons---------------------------
-  dropdown_add_column <- dropdownButton(
-    label="Add Columns (p,N,overall)",
-    setting_add_p, setting_add_overall, setting_add_n,
-    circle=FALSE, status="primary", icon=icon("gear"))
 
   dropdown_modify_label <- dropdownButton(
     label="Variable Label Setting",
@@ -118,7 +84,7 @@ tbl_summary_addin <- function(){
     titlePanel("Interactive tbl_summary"),
     sidebarLayout(
       sidebarPanel(
-        setting_variables,setting_by,setting_statistics,setting_digits,setting_missing, setting_missingtext,setting_percent,
+        tbl_summary_addin_sidebar_ui(),
         fluidRow( dlbutton_excel, dlbutton_csv, dlbutton_html ),
         fluidRow( button_copy_script )
       ),
@@ -126,7 +92,7 @@ tbl_summary_addin <- function(){
       mainPanel(
         fluidRow(
           column(width = 2 ,
-                 dropdown_add_column     , hr(),
+                 tbl_summary_addin_dropdown_ui_add_column(), hr(),
                  dropdown_modify_label   , hr(),
                  dropdown_set_column_type, hr(),
                  dropdown_header_setting , hr(),
