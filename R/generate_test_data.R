@@ -40,3 +40,11 @@ generate_testdata <- function(n, with_date = FALSE, with_na = TRUE){
 
   return(res)
 }
+
+#' Wide test data creation
+#' @importFrom tibble tibble
+#' @return tibble return tibble data.frame
+#' @export
+generate_widedata <- function(n,w){
+  as_tibble(matrix(rnorm(n*w), nrow = n, ncol = w),.name_repair = "unique")
+}

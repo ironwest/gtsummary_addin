@@ -3,7 +3,6 @@
 #' @importFrom tibble lst
 #' @importFrom shinyWidgets pickerInput
 #' @return list
-
 tbl_summary_addin_sidebar_ui <- function(){
   setting_by        <- selectInput(
     inputId = "by",
@@ -75,7 +74,6 @@ tbl_summary_addin_sidebar_ui <- function(){
 #' @import shiny
 #' @importFrom shinyWidgets materialSwitch prettyCheckbox dropdownButton
 #' @return list
-
 tbl_summary_addin_dropdown_ui_add_column <- function(){
   setting_add_p <- div(
     materialSwitch("add_p_condition","Add p", status = "primary") %>% add_popover_help("add p value","http://www.danieldsjoberg.com/gtsummary/reference/add_p.tbl_survfit.html"),
@@ -99,4 +97,25 @@ tbl_summary_addin_dropdown_ui_add_column <- function(){
     circle=FALSE, status="primary", icon=icon("gear"))
 
   return(dropdown_add_column)
+}
+
+#' generate dropdown UI for theme setting for tbl_summary_addin
+tbl_summary_addin_dropdown_ui_theme <- function(){
+
+  language_choices <- c("de", "en", "es", "fr", "gu", "hi", "ja", "mr", "pt", "se", "zh-cn","zh-tw")
+
+  result <- dropdownButton(
+    label = "Set Theme for Table",
+    selectInput("language", "Select Language", choices=language_choices, selected = "en"),
+    textInput("decimal_mark", "Decimal Mark:", "."),
+    textInput("big_mark", "Big Mark:", ","),
+    textInput("iqr_sep", "IQR Sep:", "-"),
+    textInput("ci_sep", "CI Sep:", "-"),
+    circle=FALSE,
+    status="primary",
+    icon=icon("paint-roller")
+  )
+
+  return(result)
+
 }

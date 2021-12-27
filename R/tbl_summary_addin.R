@@ -26,15 +26,7 @@ tbl_summary_addin <- function(){
   #call module------------------------
   variable_loader_modal_ui <- variableLoaderModalUI(id = "load_variable_name")
 
-  # >> Theme ----------------------
-  setting_theme_language     <- selectInput("language", "Select Language", choices=c("de", "en", "es", "fr", "gu", "hi", "ja", "mr", "pt", "se", "zh-cn","zh-tw"), selected = "en")
-  setting_theme_decimal_mark <- textInput("decimal_mark", "Decimal Mark:", ".")
-  setting_theme_big_mark     <- textInput("big_mark", "Big Mark:", ",")
-  setting_theme_iqr_sep      <- textInput("iqr_sep", "IQR Sep:", "-")
-  setting_theme_ci_sep       <- textInput("ci_sep", "CI Sep:", "-")
-
   # > Dropdown buttons---------------------------
-
   dropdown_modify_label <- dropdownButton(
     label="Variable Label Setting",
     uiOutput("edit_label"),
@@ -43,7 +35,8 @@ tbl_summary_addin <- function(){
 
   dropdown_header_setting <- dropdownButton(
     label="Table Header Setting",
-    uiOutput("header"), prettyCheckbox("bold_label", "Bold Label"),
+    uiOutput("header"),
+    prettyCheckbox("bold_label", "Bold Label"),
     circle=FALSE, status="primary", icon=icon("heading")
   )
 
@@ -51,13 +44,6 @@ tbl_summary_addin <- function(){
     label="Variable Type Setting",
     uiOutput("set_column_type"),
     circle=FALSE, status="primary", icon=icon("cat"), width=12
-  )
-
-  dropdown_theme_setting <- dropdownButton(
-    label = "Set Theme for Table",
-    setting_theme_language,setting_theme_decimal_mark,setting_theme_big_mark,
-    setting_theme_iqr_sep,setting_theme_ci_sep,
-    circle=FALSE, status="primary", icon=icon("paint-roller")
   )
 
   # > Dlbuttons -------------------------------------
@@ -74,10 +60,10 @@ tbl_summary_addin <- function(){
 
   # @@@UI ------------------------------
   ui <- fluidPage(
-    tags$style(type="text/css",css_bigfont("decimal_mark") ),#decimal_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css",css_bigfont("big_mark") ),#big_mark.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css",css_bigfont("iqr_sep") ),#iqr_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
-    tags$style(type="text/css",css_bigfont("ci_sep") ),#ci_sep.shiny-bound-input{font-size: 32px; line-height: 40px}"),
+    tags$style(type="text/css",css_bigfont("decimal_mark") ),
+    tags$style(type="text/css",css_bigfont("big_mark") ),
+    tags$style(type="text/css",css_bigfont("iqr_sep") ),
+    tags$style(type="text/css",css_bigfont("ci_sep") ),
     useShinyjs(),
     use_bs_popover(),
     rclipboardSetup(),
@@ -96,7 +82,7 @@ tbl_summary_addin <- function(){
                  dropdown_modify_label   , hr(),
                  dropdown_set_column_type, hr(),
                  dropdown_header_setting , hr(),
-                 dropdown_theme_setting  , hr()),
+                 tbl_summary_addin_dropdown_ui_theme(), hr()),
           column(width = 10, shinycssloaders::withSpinner(gt::gt_output("table1")))
         ),
         fluidRow(
@@ -111,32 +97,12 @@ tbl_summary_addin <- function(){
 
   server <- function(input, output, session) {
 
+    #stop app when browser closed-------------------
+    session$onSessionEnded(function() {stopApp()})
 
     # Hide all UI ----------------------------------
-    hide("dltable_word")
-    hide("dltable_csv")
-    hide("var")
-    hide("by")
-    hide("percent")
-    hide("missing")
-    hide("add_p_condition")
-    hide("add_p_categorical")
-    hide("add_p_continuous")
-    hide("statistics_categorical")
-    hide("statistics_continuous")
-    hide("digits")
-    hide("missing_text")
-    hide("add_overall_condition")
-    hide("add_overall_last")
-    hide("add_overall_label")
-    hide("drop_down_add_column")
-    hide("drop_down_modify_label")
-    hide("drop_down_header_setting")
-    hide("drop_down_set_column_type")
-    hide("dropdown_theme_setting")
-    hide("dltable_html")
-    hide("bold_label")
-    hide("footnote_p")
+    hide_these_on_load <- c("dltable_word","dltable_csv","var","by","percent","missing","add_p_condition","add_p_categorical","add_p_continuous","statistics_categorical","statistics_continuous","digits","missing_text","add_overall_condition","add_overall_last","add_overall_label","drop_down_add_column","drop_down_modify_label","drop_down_header_setting","drop_down_set_column_type","dropdown_theme_setting","dltable_html","bold_label","footnote_p")
+    map(hide_these_on_load, hide)
 
     #[UI]-----------------------------------------------
     # > Show/Hide logic--------------------------------
@@ -211,13 +177,20 @@ tbl_summary_addin <- function(){
     # > Update select input:var----------------------
     observeEvent(dat(), {
 
-      column_names <- dat() %>%colnames()
+      column_names <- dat() %>% colnames()
+
+      # select variable upto first 5 (for large dataset)
+      if(length(column_names) >= 5){
+        select_these <- column_names[1:5]
+      }else{
+        select_these <- column_names
+      }
 
       updatePickerInput(
         session  = session,
         inputId  = "var",
         choices  = column_names,
-        selected = column_names
+        selected = select_these
       )
     })
 
@@ -232,24 +205,10 @@ tbl_summary_addin <- function(){
 
     # > Show relevant UI when variable selected--------------------
     observeEvent(dat(), {
-      show("dltable_word")
-      show("dltable_csv")
-      show("dltable_html")
-      show("var")
-      show("by")
-      show("statistics_categorical")
-      show("statistics_continuous")
-      show("digits")
-      show("missing")
-      show("missing_text")
-      show("drop_down_add_column")
-      show("drop_down_modify_label")
-      show("drop_down_header_setting")
-      show("drop_down_set_column_type")
-      show("dropdown_theme_setting")
-      show("bold_label")
-      show("footnote")
-      show("percent")
+      show_these_when_data_selected <- {
+        c("dltable_word","dltable_csv","dltable_html","var","by","statistics_categorical","statistics_continuous","digits","missing","missing_text","drop_down_add_column","drop_down_modify_label","drop_down_header_setting","drop_down_set_column_type","dropdown_theme_setting","bold_label","footnote","percent")
+      }
+      map(show_these_when_data_selected,show)
     })
 
     #[Load Data] ---------------------------------------
@@ -646,7 +605,6 @@ tbl_summary_addin <- function(){
     output$dltable_word <- downloadHandler(
       filename = function() {"table1.docx"},
       content = function(file){
-
         render( system.file("extdata","word_template.Rmd", package="gtsummaryAddin", mustWork = TRUE), output_file = file)
       }
     )
@@ -654,7 +612,6 @@ tbl_summary_addin <- function(){
     output$dltable_csv <- downloadHandler(
       filename = function() {"table1.csv"},
       content = function(file){
-
         temp <- modified_appearance() %>% as_tibble()
         write_csv(temp,file)
       }
@@ -667,6 +624,8 @@ tbl_summary_addin <- function(){
       }
     )
   }
+
+
 
   viewer <- browserViewer()
   runGadget(ui, server, viewer = viewer)

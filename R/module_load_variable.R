@@ -23,9 +23,7 @@ load_environmental_variable <- function(type="data.frame"){
 variableLoaderModalUI <- function(id){
   ns <- NS(id)
 
-  list(
-    ""
-  )
+  list("")
 }
 
 #' Server Module to select variable from target environment.
