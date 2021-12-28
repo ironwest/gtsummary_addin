@@ -3,10 +3,10 @@
 #' This function is to call shiny app for tbl_summary/
 #'
 #' @importFrom magrittr %>%
-#' @importFrom shinyjs useShinyjs hide show
+#' @importFrom shinyjs useShinyjs hide show reset
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom gt gt_output render_gt
-#' @importFrom purrr map pmap map2_chr
+#' @importFrom purrr map pmap map2_chr walk
 #' @importFrom stringr str_c str_glue str_detect str_remove
 #' @importFrom tibble enframe as_tibble
 #' @importFrom tidyr unnest
@@ -55,8 +55,12 @@ tbl_summary_addin <- function(){
   # > Copy button-------------------------------------
   button_copy_script <- uiOutput("clip")
 
+  # > Reload data.frame button------------------------
+  button_reload_dataframe <- actionButton("reload_data","Reload DF", icon = icon("table"))
   # > CSS code--------------------
   css_bigfont <- function(inputId){str_c("#",inputId,".shiny-bound-input{font-size: 32px; line-height: 40px}")}
+
+  # >JS code--------------------
 
   # @@@UI ------------------------------
   ui <- fluidPage(
@@ -72,7 +76,8 @@ tbl_summary_addin <- function(){
       sidebarPanel(
         tbl_summary_addin_sidebar_ui(),
         fluidRow( dlbutton_excel, dlbutton_csv, dlbutton_html ),
-        fluidRow( button_copy_script )
+        fluidRow( button_copy_script ),
+        fluidRow( button_reload_dataframe)
       ),
 
       mainPanel(
@@ -216,13 +221,17 @@ tbl_summary_addin <- function(){
     # > variable_name: Module(variable_LoaderModalServer) -----------------------------
     variable_name <- variableLoaderModalServer(id = "load_variable_name", target_type = "data.frame")
 
-    # > dat() ------------------------------------
-    dat <- reactive({
+    read_this_data <- reactive({
       req(variable_name())
 
-      variable_name()
       read_this <- eval(expr=parse(text=variable_name()), envir=.GlobalEnv)
       return(read_this)
+    })
+
+    # > dat() ------------------------------------
+    dat <- reactive({
+      req(read_this_data())
+      return(read_this_data())
     })
 
     # > selected_data()-----------------------------
@@ -623,6 +632,12 @@ tbl_summary_addin <- function(){
         render( system.file("extdata","html_template.rmd", package="gtsummaryAddin", mustWork = TRUE), output_file = file)
       }
     )
+
+    # [Reload Button] --------------------------
+    observeEvent(input$reload_data, {
+      walk(names(input),reset)
+      variable_name <- variableLoaderModalServer(id = "load_variable_name", target_type = "data.frame", current_var = variable_name())
+    })
   }
 
 

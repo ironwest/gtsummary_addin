@@ -4,7 +4,7 @@
 \alias{variableLoaderModalServer}
 \title{Server Module to select variable from target environment.}
 \usage{
-variableLoaderModalServer(id, target_type = "data.frame")
+variableLoaderModalServer(id, target_type = "data.frame", current_var = NA)
 }
 \arguments{
 \item{id}{id for shiny module}

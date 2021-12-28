@@ -33,7 +33,7 @@ variableLoaderModalUI <- function(id){
 #' @import stringr
 #' @import shiny
 
-variableLoaderModalServer <- function(id, target_type="data.frame"){
+variableLoaderModalServer <- function(id, target_type="data.frame", current_var=NA){
   moduleServer(
     id,
     function(input, output, session){
@@ -52,16 +52,25 @@ variableLoaderModalServer <- function(id, target_type="data.frame"){
       }
 
 
-
       modal_ui <- modalDialog(
         easyClose = FALSE,
         ui_select_target,
         footer = actionButton(ns("set_target"), label="Select")
       )
 
+
       showModal(modal_ui)
+
       observeEvent(input$set_target, {
-        removeModal()
+        if(!is.na(current_var)){
+          if(current_var == input$select_target){
+            #do nothing
+          }else{
+            removeModal()
+          }
+        }else{
+          removeModal()
+        }
       })
 
       return_this <- eventReactive(input$set_target, {input$select_target})
